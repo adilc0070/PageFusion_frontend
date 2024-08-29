@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 
@@ -9,7 +8,7 @@ const validationSchema = Yup.object({
         .email('Invalid email address')
         .matches(/@(gmail\.com|outlook\.com|yahoo\.com|icloud\.com)$/, 'Email must be from Gmail, Outlook, Yahoo, or iCloud')
         .required('Required'),
-    password: Yup.string().required('Required'),
+    password: Yup.string().matches(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/, 'Password must be at least 6 characters please include at least one letter and one number ').required('Required'),
 });
 
 const Register = () => {
