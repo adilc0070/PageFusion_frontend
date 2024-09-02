@@ -1,11 +1,30 @@
-import PdfUpload from '../components/PdfUpload'
+import React, { useState } from 'react';
+import PdfUpload from '../components/PdfUpload';
+import PdfPageList from '../components/PdfPageList';
 
 const FileUpladingPage = () => {
-    return (
-        <div className=" w-screen h-screen overflow-hidden flex justify-center items-center ">
-            <PdfUpload />
-        </div>
-    )
-}
+  const [pages, setPages] = useState<string[]>([]);
 
-export default FileUpladingPage
+  const handleFilesUploaded = (pages: string[]) => {
+    setPages(pages);
+  };
+
+  const handleRemoveFile = () => {
+    setPages([]);
+  };
+
+  return (
+    <div className="w-screen h-screen flex flex-col items-center  bg-base-200">
+      <div className="flex-grow w-full max-w-4xl p-6 bg-base-100 shadow-xl rounded-lg border border-base-300">
+        <PdfUpload onFilesUploaded={handleFilesUploaded} />
+      </div>
+      {pages.length > 0 && (
+        <div className="flex-grow w-full max-w-4xl p-6 mt-6 bg-base-100 shadow-xl rounded-lg border border-base-300">
+          <PdfPageList pages={pages} onRemoveFile={handleRemoveFile} />
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default FileUpladingPage;
