@@ -2,10 +2,9 @@ import React, { useState } from 'react';
 
 interface PdfPageListProps {
     pages: string[];
-    onRemoveFile: () => void;
 }
 
-const PdfPageList: React.FC<PdfPageListProps> = ({ pages, onRemoveFile }) => {
+const PdfPageList: React.FC<PdfPageListProps> = ({ pages}) => {
     const [selectedPage, setSelectedPage] = useState<string | null>(null);
     const [selectedCheckboxes, setSelectedCheckboxes] = useState<boolean[]>(new Array(pages.length).fill(false));
 
