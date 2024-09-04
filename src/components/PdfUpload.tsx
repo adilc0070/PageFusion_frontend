@@ -1,4 +1,7 @@
 import React, { useState, ChangeEvent } from 'react';
+import * as pdfjsLib from 'pdfjs-dist/build/pdf';
+import 'pdfjs-dist/build/pdf.worker.entry';
+import { PDFDocument } from 'pdf-lib';
 
 interface PdfUploadProps {
   onFilesUploaded?: (pages: string[]) => void;
@@ -14,30 +17,45 @@ const PdfUpload: React.FC<PdfUploadProps> = ({ onFilesUploaded }) => {
     }
   };
 
-  const handleSubmit = async () => {
-    if (!pdfFile) return;
+  const handlePdfToPages = async (pdfFile: File) => {
+    const arrayBuffer = await pdfFile.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+    const numPages = pdf.numPages;
+    const pages: string[] = [];
 
-    try {
-      const formData = new FormData();
-      formData.append('pdf', pdfFile);
+    for (let i = 1; i <= numPages; i++) {
+      const page = await pdf.getPage(i);
+      const viewport = page.getViewport({ scale: 2 });
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      canvas.height = viewport.height;
+      canvas.width = viewport.width;
 
-      const response = await fetch('http://localhost:3000/upload', {
-        method: 'POST',
-        body: formData,
+      await page.render({ canvasContext: context, viewport }).promise;
+
+      // Convert the rendered canvas to a PDF file
+      const pdfDoc = await PDFDocument.create();
+      const newPage = pdfDoc.addPage([viewport.width, viewport.height]);
+      const img = await pdfDoc.embedPng(canvas.toDataURL('image/png'));
+      newPage.drawImage(img, {
+        x: 0,
+        y: 0,
+        width: viewport.width,
+        height: viewport.height,
       });
+      const pdfBytes = await pdfDoc.saveAsBase64({ dataUri: true });
 
-      if (!response.ok) {
-        throw new Error('Network response was not ok.');
-      }
+      pages.push(pdfBytes);
+    }
 
-      const data = await response.json();
-      const pageUrls = data.pages.map((base64: string) => `data:application/pdf;base64,${base64}`);
-      
-      if (onFilesUploaded) {
-        onFilesUploaded(pageUrls);
-      }
-    } catch (error) {
-      console.error('Error uploading file:', error);
+    if (onFilesUploaded) {
+      onFilesUploaded(pages);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (pdfFile) {
+      handlePdfToPages(pdfFile);
     }
   };
 
