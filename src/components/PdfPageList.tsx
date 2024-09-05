@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 interface PdfPageListProps {
-    pages: string[];
+    pages: { preview: string, encodedPdf: string }[];
 }
 
 const PdfPageList: React.FC<PdfPageListProps> = ({ pages }) => {
@@ -12,43 +12,54 @@ const PdfPageList: React.FC<PdfPageListProps> = ({ pages }) => {
         updatedCheckboxes[index] = !updatedCheckboxes[index];
         setSelectedCheckboxes(updatedCheckboxes);
     };
+    useEffect(() => {
+        setSelectedCheckboxes(new Array(pages.length).fill(false));
+    }, [pages])
+    const handleSelectOddPages = () => {
+        const updatedCheckboxes = selectedCheckboxes.map((_, index) => index % 2 === 0);
+        setSelectedCheckboxes(updatedCheckboxes);
+    };
+
+    const handleSelectEvenPages = () => {
+        const updatedCheckboxes = selectedCheckboxes.map((_, index) => index % 2 !== 0);
+        setSelectedCheckboxes(updatedCheckboxes);
+    };
+    const handleClearSelection = () => {
+        setSelectedCheckboxes(new Array(pages.length).fill(false));
+    };
 
     const handleGeneratePdf = async () => {
-        const selectedPages = pages.filter((_, index) => selectedCheckboxes[index]);
-    
+        const selectedPages = pages.filter((_, index) => selectedCheckboxes[index] && pages[index].encodedPdf);
+
         if (selectedPages.length === 0) {
             alert('No pages selected');
             return;
         }
-    
+
         try {
-            const response = await fetch('http://localhost:3000/generate-pdf', {
+            const response = await fetch(`${import.meta.env.VITE_BASEURL}/pdf/generate-pdf`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ pages: selectedPages }),
+                body: JSON.stringify({ pages: selectedPages.map(page => page.encodedPdf) }),
             });
-    
+
             if (!response.ok) {
                 throw new Error('Failed to generate PDF');
             }
-    
-            // Create a Blob from the response
+
             const pdfBlob = await response.blob();
-    
-            // Create an object URL for the Blob
+
             const url = URL.createObjectURL(pdfBlob);
-    
-            // Create a link element, set its href to the object URL, and simulate a click
+
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'generated.pdf';
+            a.download = `pageFusion.pdf`;
             document.body.appendChild(a);
             a.click();
             a.remove();
-    
-            // Revoke the object URL after the download
+
             URL.revokeObjectURL(url);
-    
+
         } catch (error) {
             console.error('Error generating PDF:', error);
         }
@@ -56,8 +67,21 @@ const PdfPageList: React.FC<PdfPageListProps> = ({ pages }) => {
 
     return (
         <div className="relative w-full h-full">
-            <div className="overflow-y-auto max-h-[calc(100vh-120px)] p-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="flex justify-between items-center space-x-4 mb-4">
+                <button onClick={handleGeneratePdf} className="btn btn-primary">Generate PDF</button>
+                <div className="dropdown z-40">
+                    <label tabIndex={0} className="btn btn-outline">Options</label>
+                    <ul tabIndex={0} className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 space-y-2">
+                        <li><button onClick={handleSelectOddPages} className="">Select Odd Pages</button></li>
+                        <li><button onClick={handleSelectEvenPages} className="">Select Even Pages</button></li>
+                        <li><button onClick={handleClearSelection} className="">Clear Selection</button></li>
+                    </ul>
+                </div>
+
+            </div>
+
+            <div className="overflow-y-auto max-h-96 p-4">
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {pages.map((page, index) => (
                         <div key={index} className="card bg-base-100 shadow-xl border border-base-300">
                             <div className="card-body p-4">
@@ -70,12 +94,11 @@ const PdfPageList: React.FC<PdfPageListProps> = ({ pages }) => {
                                     />
                                     <h2 className="text-primary text-base sm:text-lg font-semibold">Page {index + 1}</h2>
                                 </div>
-                                <img src={page} alt={`Page ${index + 1}`} className="w-full mb-2 cursor-pointer" />
+                                <img src={page.preview} alt={`Page ${index + 1}`} className="w-full mb-2 cursor-pointer" />
                             </div>
                         </div>
                     ))}
                 </div>
-                <button onClick={handleGeneratePdf} className="btn btn-primary mt-4">Generate PDF</button>
             </div>
         </div>
     );

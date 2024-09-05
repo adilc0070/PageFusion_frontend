@@ -1,25 +1,32 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Register from './components/Register';
 import FileUpladingPage from './Pages/FileUpladingPage';
-import Protecter from './components/Protecter'; // Make sure to adjust the path as needed
+import { Protecter, PublicRoute } from './components/Protecter';
+import LandingPage from './components/LandingPage';
+
 
 const AllRoutes = () => {
     return (
         <Routes>
-            <Route path="/register" element={<Register />} />
-            
-            {/* Protect routes that require authentication */}
-            <Route 
-                path="/" 
+            <Route path="/" element={<LandingPage />} />
+
+            <Route path="/register" element={
+                <PublicRoute>
+                    <Register />
+                </PublicRoute>
+
+            } />
+
+            <Route
+                path="/file"
                 element={
                     <Protecter>
                         <FileUpladingPage />
                     </Protecter>
-                } 
+                }
             />
-            
-            {/* Add a catch-all route for 404 pages */}
-            <Route path="*" element={<Navigate to="/" />} />
+
+            <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
     );
 };

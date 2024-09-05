@@ -1,13 +1,14 @@
 import React, { useState, ChangeEvent } from 'react';
-import * as pdfjsLib from 'pdfjs-dist/build/pdf';
+import { getDocument } from 'pdfjs-dist';
 import 'pdfjs-dist/build/pdf.worker.entry';
 import { PDFDocument } from 'pdf-lib';
 
 interface PdfUploadProps {
-  onFilesUploaded?: (pages: string[]) => void;
+  onFilesUploaded?: (pages: { preview: string; encodedPdf: string; }[]) => void;
+
 }
 
-const PdfUpload: React.FC<PdfUploadProps> = ({ onFilesUploaded }) => {
+const PdfUpload: React.FC<PdfUploadProps> = ({ onFilesUploaded ,}) => {
   const [pdfFile, setPdfFile] = useState<File | null>(null);
 
   const handleFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
@@ -19,20 +20,27 @@ const PdfUpload: React.FC<PdfUploadProps> = ({ onFilesUploaded }) => {
 
   const handlePdfToPages = async (pdfFile: File) => {
     const arrayBuffer = await pdfFile.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+    const pdf = await getDocument(arrayBuffer).promise;
     const numPages = pdf.numPages;
-    const pages: string[] = [];
-
+    const pages: { preview: string, encodedPdf: string }[] = [];
+  
     for (let i = 1; i <= numPages; i++) {
       const page = await pdf.getPage(i);
       const viewport = page.getViewport({ scale: 2 });
       const canvas = document.createElement('canvas');
       const context = canvas.getContext('2d');
+      if (!context) {
+        console.error('Failed to get canvas context');
+        continue;
+      }
       canvas.height = viewport.height;
       canvas.width = viewport.width;
-
+  
       await page.render({ canvasContext: context, viewport }).promise;
-
+  
+      // Convert canvas to base64 image
+      const preview = canvas.toDataURL('image/png');
+  
       // Convert the rendered canvas to a PDF file
       const pdfDoc = await PDFDocument.create();
       const newPage = pdfDoc.addPage([viewport.width, viewport.height]);
@@ -44,12 +52,12 @@ const PdfUpload: React.FC<PdfUploadProps> = ({ onFilesUploaded }) => {
         height: viewport.height,
       });
       const pdfBytes = await pdfDoc.saveAsBase64({ dataUri: true });
-
-      pages.push(pdfBytes);
+  
+      pages.push({ preview, encodedPdf: pdfBytes });
     }
-
+  
     if (onFilesUploaded) {
-      onFilesUploaded(pages);
+      onFilesUploaded(pages); // Pass the correctly typed pages array
     }
   };
 
@@ -75,7 +83,7 @@ const PdfUpload: React.FC<PdfUploadProps> = ({ onFilesUploaded }) => {
         </div>
 
         {pdfFile && (
-          <div className="card bg-base-100 shadow-xl border border-base-300">
+          <div className="card bg-base-100 w-full sm:w-1/2 shadow-xl border border-base-300">
             <div className="card-body p-4">
               <h2 className="text-primary text-lg font-semibold truncate">{pdfFile.name}</h2>
               <p className="text-sm">Size: {(pdfFile.size / 1024 / 1024).toFixed(2)} MB</p>

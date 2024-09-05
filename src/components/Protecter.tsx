@@ -1,13 +1,29 @@
-import { useSelector } from "react-redux";
-import { RootState } from "../store/store"; // Import the RootState type
 import { Navigate } from "react-router-dom";
+import { getToken } from "../utils/auth";
 
 interface ProtecterProps {
     children: React.ReactNode;
 }
 
-export default function Protecter({ children }: ProtecterProps) {
-    const user = useSelector((state: RootState) => state.user.isAuthenticated);
+export function Protecter({ children }: ProtecterProps) {
+    const user = getToken();
 
-    return user ? <>{children}</> : <Navigate to="/register" />;
+    // If no user token, redirect to /register
+    if (!user) {
+        return <Navigate to="/register" replace />;
+    }
+
+    // If authenticated, render the protected content
+    return <>{children}</>;
+}
+
+interface PublicRouteProps {
+    children: React.ReactNode;
+}
+
+export function PublicRoute({ children }: PublicRouteProps) {
+    const user = getToken();
+
+    // If user is authenticated, redirect them to the home page
+    return user ? <Navigate to="/" replace /> : <>{children}</>;
 }
