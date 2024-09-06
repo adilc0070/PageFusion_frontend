@@ -95,7 +95,7 @@ For any issues or contributions, please open an issue or pull request on this re
 For more information, please contact:
 
 - **Adil C**
-- [Website](https://pagefusion.adilc0070.site)
+- [Website](https://adilc0070.site)
 - [Email](mailto:adilc0070@gmail.com)
 - [GitHub](https://github.com/adilc0070)
 - [LinkedIn](https://www.linkedin.com/in/adilc0070)
