@@ -77,19 +77,6 @@ To set up the project locally, follow these steps:
 - Make sure the backend server is running locally or accessible via the provided `VITE_BASEURL`.
 - For production builds, you might need to adjust environment variables and configurations accordingly.
 
-## Contact
-
-For more information, please contact:
-
-- **Adil C**
-- [Website](https://pagefusion.adilc0070.site)
-- [Email](mailto:adil@example.com)
-- [GitHub](https://github.com/adilc0070)
-- [LinkedIn](https://www.linkedin.com/in/adilc0070)
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Acknowledgements
 
@@ -103,4 +90,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 For any issues or contributions, please open an issue or pull request on this repository.
 
-Replace the placeholder email address with your actual email if you want it to be visible. Let me know if there's anything else you'd like to add or modify!
+## Contact
+
+For more information, please contact:
+
+- **Adil C**
+- [Website](https://pagefusion.adilc0070.site)
+- [Email](mailto:adilc0070@gmail.com)
+- [GitHub](https://github.com/adilc0070)
+- [LinkedIn](https://www.linkedin.com/in/adilc0070)
