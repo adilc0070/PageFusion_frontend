@@ -6,15 +6,18 @@ import { setUserLogin } from '../store/slice/slice';
 import { useNavigate } from 'react-router-dom';
 import { loginUser, registerUser } from '../services/apiService';
 import { setToken } from '../utils/auth';
+import { toast } from 'sonner';
+import { isAxiosError } from 'axios';
 
-// Define Values type
 type Values = {
     email: string;
     password: string;
     name?: string;
 };
 
-// Validation schemas
+interface ErrorResponse {
+    message: string;
+}
 const loginValidationSchema = Yup.object({
     email: Yup.string()
         .email('Invalid email address')
@@ -38,25 +41,38 @@ const registerValidationSchema = Yup.object({
         .required('Required'),
 });
 
-// LoginForm Component
 const LoginForm = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
     const handleLogin = async (values: Values) => {
         try {
-            const data = await loginUser(values.email, values.password);
-
+            const data = await loginUser(values.email, values.password)
             if (data.token) {
+                toast.success(data.message);
                 setToken(data.token);
                 dispatch(setUserLogin(values.email));
                 navigate('/');
             } else {
-                alert('Login failed. Please check your credentials.');
+                toast.error(data.message);
             }
         } catch (error) {
-            alert('Error logging in. Please try again.');
-            console.error('Error logging in:', error);
+            if (isAxiosError(error)) {
+                const errorResponse = error.response?.data as ErrorResponse;
+                const errorMessage = errorResponse?.message ?? 'An unknown error occurred';
+                
+                toast(`Please check your email and password`, {
+                    description: errorMessage,
+                    icon: '⚠️',
+                    style: {
+                        borderRadius: '10px',
+                        background: 'black',
+                        color: '#fff',
+                        fontSize: '16px',
+                    }
+                });
+            }
+
         }
     };
 
@@ -89,7 +105,6 @@ const LoginForm = () => {
     );
 };
 
-// RegisterForm Component
 const RegisterForm = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -103,11 +118,24 @@ const RegisterForm = () => {
                 dispatch(setUserLogin(values.email));
                 navigate('/');
             } else {
-                alert('Registration failed. Try again with different credentials.');
+                toast.error(response.message);
             }
         } catch (error) {
-            alert('Error during registration. Please try again.');
-            console.error('Registration error:', error);
+            if (isAxiosError(error)) {
+                const errorResponse = error.response?.data as ErrorResponse;
+                const errorMessage = errorResponse?.message ?? 'An unknown error occurred';
+                
+                toast(`Registration failed`, {
+                    description: errorMessage,
+                    icon: '⚠️',
+                    style: {
+                        borderRadius: '10px',
+                        background: 'black',
+                        color: '#fff',
+                        fontSize: '16px',
+                    }
+                });
+            }
         }
     };
 
@@ -147,7 +175,6 @@ const RegisterForm = () => {
     );
 };
 
-// Main Register Component
 const Register = () => {
     const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
 
@@ -163,9 +190,9 @@ const Register = () => {
                         <div className="text-center lg:text-left w-full lg:w-1/2 px-4">
                             <h1 className="text-5xl font-bold">{activeTab === 'login' ? 'Login' : 'Register'} to Your PDF Tool</h1>
                             <p className="py-6">
-                                {activeTab === 'login' ? 
-                                'Log in to access your PDF splitting and page selection tool.' : 
-                                'Register to start managing your PDFs.'}
+                                {activeTab === 'login' ?
+                                    'Log in to access your PDF splitting and page selection tool.' :
+                                    'Register to start managing your PDFs.'}
                             </p>
                         </div>
                         <div className="card bg-base-100 w-full lg:w-1/2 max-w-sm shadow-2xl">

@@ -1,21 +1,22 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux'; // Import useDispatch if you're using Redux for state management
+import { useDispatch } from 'react-redux'; 
 import { logoutUser } from '../services/apiService';
 import { setUserLogout } from '../store/slice/slice';
 import { getToken } from '../utils/auth';
-import { RiLogoutBoxLine, RiRegisteredLine } from 'react-icons/ri';
+import { RiLogoutBoxLine} from 'react-icons/ri';
 import { FaFileUpload } from 'react-icons/fa';
 import { BiHome } from 'react-icons/bi';
+import { MdAccountCircle } from 'react-icons/md';
 
 const Navbar: React.FC = () => {
     const navigate = useNavigate();
-    const dispatch = useDispatch(); // If you're using Redux, else omit this line
+    const dispatch = useDispatch(); 
     const userExist = getToken();
     const handleLogout = () => {
         logoutUser();
         dispatch(setUserLogout());
-        navigate('/login'); // Redirect to login page after logout
+        navigate('/login'); 
     };
 
     return (
@@ -48,7 +49,7 @@ const Navbar: React.FC = () => {
                     ) :
 
                         <Link to="/register" className="btn btn-primary mx-2 border border-teal-950">
-                                <RiRegisteredLine />
+                                <MdAccountCircle />
                                 Register
                         </Link>
                     }

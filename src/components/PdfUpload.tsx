@@ -2,14 +2,15 @@ import React, { useState, ChangeEvent } from 'react';
 import { getDocument } from 'pdfjs-dist';
 import 'pdfjs-dist/build/pdf.worker.entry';
 import { PDFDocument } from 'pdf-lib';
+import { BiUpload } from 'react-icons/bi';
 
 interface PdfUploadProps {
   onFilesUploaded?: (pages: { preview: string; encodedPdf: string; }[]) => void;
-
 }
 
-const PdfUpload: React.FC<PdfUploadProps> = ({ onFilesUploaded ,}) => {
+const PdfUpload: React.FC<PdfUploadProps> = ({ onFilesUploaded }) => {
   const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const handleFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files ? e.target.files[0] : null;
@@ -23,7 +24,7 @@ const PdfUpload: React.FC<PdfUploadProps> = ({ onFilesUploaded ,}) => {
     const pdf = await getDocument(arrayBuffer).promise;
     const numPages = pdf.numPages;
     const pages: { preview: string, encodedPdf: string }[] = [];
-  
+
     for (let i = 1; i <= numPages; i++) {
       const page = await pdf.getPage(i);
       const viewport = page.getViewport({ scale: 2 });
@@ -35,13 +36,11 @@ const PdfUpload: React.FC<PdfUploadProps> = ({ onFilesUploaded ,}) => {
       }
       canvas.height = viewport.height;
       canvas.width = viewport.width;
-  
+
       await page.render({ canvasContext: context, viewport }).promise;
-  
-      // Convert canvas to base64 image
+
       const preview = canvas.toDataURL('image/png');
-  
-      // Convert the rendered canvas to a PDF file
+
       const pdfDoc = await PDFDocument.create();
       const newPage = pdfDoc.addPage([viewport.width, viewport.height]);
       const img = await pdfDoc.embedPng(canvas.toDataURL('image/png'));
@@ -52,18 +51,25 @@ const PdfUpload: React.FC<PdfUploadProps> = ({ onFilesUploaded ,}) => {
         height: viewport.height,
       });
       const pdfBytes = await pdfDoc.saveAsBase64({ dataUri: true });
-  
+
       pages.push({ preview, encodedPdf: pdfBytes });
     }
-  
+
     if (onFilesUploaded) {
-      onFilesUploaded(pages); // Pass the correctly typed pages array
+      onFilesUploaded(pages); 
     }
   };
 
   const handleSubmit = async () => {
     if (pdfFile) {
-      handlePdfToPages(pdfFile);
+      setLoading(true); 
+      try {
+        await handlePdfToPages(pdfFile); 
+      } catch (error) {
+        console.error('Error processing PDF:', error);
+      } finally {
+        setLoading(false); 
+      }
     }
   };
 
@@ -91,8 +97,10 @@ const PdfUpload: React.FC<PdfUploadProps> = ({ onFilesUploaded ,}) => {
                 <button
                   onClick={handleSubmit}
                   className="btn btn-primary"
+                  disabled={loading} 
                 >
-                  Submit
+                  <BiUpload />
+                  {loading ? 'Uploading...' : 'Upload'}
                 </button>
               </div>
             </div>

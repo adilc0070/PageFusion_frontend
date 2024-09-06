@@ -1,6 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-// Define types for state and actions
 interface UserState {
     email: string;
     isAuthenticated: boolean;

@@ -8,12 +8,10 @@ interface ProtecterProps {
 export function Protecter({ children }: ProtecterProps) {
     const user = getToken();
 
-    // If no user token, redirect to /register
     if (!user) {
         return <Navigate to="/register" replace />;
     }
 
-    // If authenticated, render the protected content
     return <>{children}</>;
 }
 
@@ -24,6 +22,5 @@ interface PublicRouteProps {
 export function PublicRoute({ children }: PublicRouteProps) {
     const user = getToken();
 
-    // If user is authenticated, redirect them to the home page
     return user ? <Navigate to="/" replace /> : <>{children}</>;
 }

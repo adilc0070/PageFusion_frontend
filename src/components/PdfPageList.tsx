@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { FiFile } from 'react-icons/fi';
 
 interface PdfPageListProps {
     pages: { preview: string, encodedPdf: string }[];
@@ -68,7 +69,10 @@ const PdfPageList: React.FC<PdfPageListProps> = ({ pages }) => {
     return (
         <div className="relative w-full h-full">
             <div className="flex justify-between items-center space-x-4 mb-4">
-                <button onClick={handleGeneratePdf} className="btn btn-primary">Generate PDF</button>
+                <button onClick={handleGeneratePdf} className="btn btn-primary">
+                    <FiFile />
+                    Generate PDF
+                </button>
                 <div className="dropdown z-40">
                     <label tabIndex={0} className="btn btn-outline">Options</label>
                     <ul tabIndex={0} className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 space-y-2">
